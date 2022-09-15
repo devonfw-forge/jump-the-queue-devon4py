@@ -4,7 +4,7 @@ import functools
 import json
 import mimetypes
 from functools import lru_cache
-from typing import BinaryIO, ParamSpec, TypeVar, Callable, Awaitable
+from typing import BinaryIO, ParamSpec, TypeVar, Callable, Awaitable, Optional
 
 from google.cloud.storage import Client, Bucket
 from pydantic import BaseSettings
@@ -29,7 +29,7 @@ def get_storage_settings() -> BaseStorageSettings:
     return load_env_file_on_settings(BaseStorageSettings)
 
 
-_storage_client: Client | None = None
+_storage_client: Optional[Client] = None
 
 
 def _get_storage_client():

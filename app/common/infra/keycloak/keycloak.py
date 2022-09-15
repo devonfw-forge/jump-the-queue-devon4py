@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Optional, List
 
 from fastapi import FastAPI
 from pydantic import BaseSettings
@@ -35,7 +36,7 @@ class KeycloakService(IdentityProvider):
                                        realm=keycloak_settings.realm,
                                        callback_uri=keycloak_settings.callback_uri)
 
-    def get_current_user(self, required_roles: list[str] | None = None):
+    def get_current_user(self, required_roles: Optional[List[str] ] = None):
         return self.client.get_current_user(required_roles=required_roles)  # TODO: Refactor to return User
 
     def configure_api(self, api: FastAPI):

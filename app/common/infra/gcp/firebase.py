@@ -1,6 +1,6 @@
 import json
 from functools import lru_cache
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import Depends, FastAPI
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -43,7 +43,7 @@ class FirebaseService(IdentityProvider):
         firebase_credentials = firebase_admin.credentials.Certificate(settings.credentials_file)
         self._client = firebase_admin.initialize_app(credential=firebase_credentials)
 
-    def get_current_user(self, required_roles: list[str] | None = None):
+    def get_current_user(self, required_roles: Optional[List[str]] = None):
         from firebase_admin import auth
 
         def validate_token(credential: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False)))\

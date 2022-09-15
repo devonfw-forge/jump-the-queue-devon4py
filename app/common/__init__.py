@@ -1,4 +1,4 @@
-from typing import Callable, Any
+from typing import Callable, Any, Optional, List
 from fastapi_keycloak import OIDCUser
 
 
@@ -7,7 +7,7 @@ from app.common.core.identity_provider import User
 from app.common.infra import idp
 
 
-def get_user(required_roles: list[str] | None = None) -> Callable[[Any], User]:
+def get_user(required_roles: Optional[List[str]]= None) -> Callable[[Any], User]:
     """Returns a function that checks the current user based on an access token in the HTTP-header. Optionally verifies
     roles are possessed by the user
 

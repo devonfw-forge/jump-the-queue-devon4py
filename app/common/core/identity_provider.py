@@ -13,7 +13,7 @@ class User(BaseModel):
 
 class IdentityProvider(abc.ABC):
     @abc.abstractmethod
-    def get_current_user(self, required_roles: list[str] | None = None):
+    def get_current_user(self, required_roles: Optional[List[str]]= None):
         """Function that checks the current user based on an access token in the HTTP-header. Optionally verifies
         roles are possessed by the user
 
