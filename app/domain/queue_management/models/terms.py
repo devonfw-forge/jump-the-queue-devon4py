@@ -1,13 +1,12 @@
-from typing import Optional, List
+from typing import Optional
 
-from sqlmodel import SQLModel, Relationship
-
-from app.common.base.base_entity import BaseUUIDModel
-from app.domain.queue_management.models.queue import Queue
+from sqlmodel import SQLModel, Field
 
 
-class Terms(BaseUUIDModel, table=True):
+
+class Terms(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
     title: str
     description: str
 
-    #terms: Optional['Terms'] = Relationship(back_populates="access_code")
+

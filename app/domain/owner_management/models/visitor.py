@@ -13,6 +13,6 @@ class Visitor(SQLModel, table=True):
         nullable=False,
     )
 
-    #visitor_id: [uuid_pkg.UUID] = Field(default=None, foreign_key="access_code.id")
+
     #visitor: List['Visitor'] = Relationship(back_populates="access_code")
 

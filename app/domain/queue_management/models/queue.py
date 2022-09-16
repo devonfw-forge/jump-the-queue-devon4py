@@ -23,3 +23,4 @@ class Queue(BaseUUIDModel, table=True):
 
     #queue: List['Queue'] = Relationship(back_populates="access_code")
 
+
