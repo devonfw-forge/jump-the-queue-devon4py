@@ -15,12 +15,7 @@ class QueueDto(CreateQueueRequest):
 #### classes status queue
 ###############################
 
-class Status(Enum):
-    Waiting = 'WAITING'
-    Attending = 'ATTENDING'
-    Attended = 'ATTENDED'
-    Skipped = 'SKIPPED'
-    NotStarted = 'NOTSTARTED'
+
 
 class Direction(Enum):
     ASC = 'ASC'
@@ -37,6 +32,4 @@ class EstimatedTime:
     defaultTimeByUserInMs: datetime
 
 
-class RemainingCodes:
-    remainingCodes: int
 
