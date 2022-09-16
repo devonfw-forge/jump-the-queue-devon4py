@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from functools import lru_cache
-from typing import Type, List, TypeVar, Union
+from typing import Type, List, TypeVar
 
 import yaml
 from pydantic import BaseSettings, AnyHttpUrl, validator
@@ -16,7 +16,7 @@ class GlobalSettings(BaseSettings):
     environment: str = "TEST"
     port: int = 80
     swagger_path: str = "/docs"
-    cors: Union[List[str], List[AnyHttpUrl]] = []
+    cors: List[str] | List[AnyHttpUrl] = []
 
     @validator("cors", pre=True)
     def assemble_cors_origins(cls, v: str | List[str]) -> List[str] | str:

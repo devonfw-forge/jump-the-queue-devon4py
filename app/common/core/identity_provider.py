@@ -1,5 +1,6 @@
 import abc
-from typing import  Optional, List
+from typing import Protocol, Optional, List, Callable, Any
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 
@@ -13,7 +14,7 @@ class User(BaseModel):
 
 class IdentityProvider(abc.ABC):
     @abc.abstractmethod
-    def get_current_user(self, required_roles: Optional[List[str]]= None):
+    def get_current_user(self, required_roles: list[str] | None = None):
         """Function that checks the current user based on an access token in the HTTP-header. Optionally verifies
         roles are possessed by the user
 
