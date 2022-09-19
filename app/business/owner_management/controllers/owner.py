@@ -1,11 +1,11 @@
 # import logging
 
 
-# from fastapi import APIRouter, Depends
-# from app.business.owner_management.services.owner import OwnerService
+from fastapi import APIRouter, Depends
+from app.business.owner_management.services.owner import OwnerService
 #
 #
-# router = APIRouter(prefix="/owner")
+router = APIRouter(prefix="/owner")
 #
 #
 # @router.get("/owner-role", description="Gets owner")
