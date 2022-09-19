@@ -8,11 +8,9 @@ from app.domain.access_management.models import AccessCode
 from app.domain.access_management.models.access_code import Status
 
 
-class CodeRequest(BaseModel):
-    pass
 
 
-class AccessCodeResponse(BaseModel):
+class AccessCodeDto(BaseModel):
     id: int
     code: str
     modificationCounter: int
@@ -31,7 +29,7 @@ class NextCodeCto(BaseModel):
     remainingCodes: RemainingCodes
 
 
-class UuidResponse(BaseModel):
+class UuidRequest(BaseModel):
     uuid: str
 
 
