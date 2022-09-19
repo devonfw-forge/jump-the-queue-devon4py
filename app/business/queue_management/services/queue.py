@@ -7,5 +7,9 @@ def parse_to_dto(queue_entity: Queue):
 
 
 class QueueService:
-    async def get_queue(self):
+    async def get_todays_queue(self):
         pass
+
+    async def start_queue(self):
+        pass
+
