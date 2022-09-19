@@ -28,6 +28,13 @@ class SseTopic(Enum):
     CURRENT_CODE_CHANGED_NULL = 'CURRENT_CODE_CHANGED_NULL'
 
 
+class Queue:
+    id: int
+    modificationCounter: int
+    minAttentionTime: int
+    started: bool
+    createdDate: int
+
 
 
 
