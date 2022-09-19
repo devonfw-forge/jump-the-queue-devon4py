@@ -27,9 +27,7 @@ class SseTopic(Enum):
     CURRENT_CODE_CHANGED = 'CURRENT_CODE_CHANGED'
     CURRENT_CODE_CHANGED_NULL = 'CURRENT_CODE_CHANGED_NULL'
 
-class EstimatedTime:
-    miliseconds: datetime
-    defaultTimeByUserInMs: datetime
+
 
 
 

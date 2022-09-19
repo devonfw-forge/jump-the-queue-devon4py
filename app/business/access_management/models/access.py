@@ -1,8 +1,11 @@
+from datetime import datetime
 from enum import Enum
+from uuid import UUID
 
 from pydantic import BaseModel
 
 from app.domain.access_management.models import AccessCode
+from app.domain.access_management.models.access_code import Status
 
 
 class CodeRequest(BaseModel):
@@ -10,31 +13,39 @@ class CodeRequest(BaseModel):
 
 
 class AccessCodeResponse(BaseModel):
-    # recogela respuesta de la BD???
-    pass
+    id: int
+    code: str
+    modificationCounter: int
+    uuid: UUID
+    created_time: datetime
+    start_time: datetime
+    end_time: datetime
+    status: Status
 
+
+class RemainingCodes(BaseModel):
+    remainingCodes: int
 
 class NextCodeCto(BaseModel):
-    pass
+    accessCode: AccessCode
+    remainingCodes: RemainingCodes
 
 
 class UuidResponse(BaseModel):
-    pass
+    uuid: str
 
 
 class EstimatedTimeResponse(BaseModel):
-    pass
-
-
-class EstimatedCodeResponse(BaseModel):
-    pass
+    miliseconds: datetime
+    defaultTimeByUserInMs: datetime
 
 
 
 
 
-class RemainingCodes:
-    remainingCodes: int
+
+
+
 
 
 
