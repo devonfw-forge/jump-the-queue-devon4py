@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 from enum import Enum
 from uuid import UUID
 
@@ -24,10 +24,11 @@ class SseTopic(Enum):
 
 class QueueDto(BaseModel):
     id: int
-    modification_counter: int
-    minAttention_time: int
+    modificationCounter: int
+    minAttentionTime: int
     started: bool
-    created_date: int
+    createdDate: date
+
 
 
 
