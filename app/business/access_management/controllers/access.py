@@ -1,20 +1,20 @@
 import logging
 from fastapi import APIRouter, Depends
 
-from app.business.access_management.models.access import CodeRequest, CodeResponse, CodeNextResponse, UuidResponse, \
-    EstimatedTimeResponse, EstimatedCodeResponse
+from app.business.access_management.models.access import CodeRequest, UuidResponse, \
+    EstimatedTimeResponse, EstimatedCodeResponse, AccessCodeResponse, NextCodeCto
 from app.business.access_management.services.access import AccessCodeService
 
 router = APIRouter(prefix="/access")
 
 
-@router.post("/current", description="Get ticket", response_model=CodeResponse)
+@router.post("/current", description="Get ticket", response_model=AccessCodeResponse)
 async def get_current_code(request: CodeRequest, access_service: AccessCodeService = Depends(AccessCodeService)):
     pass
     # return await access_service.get_ticket_number(request)
 
 
-@router.post("/next", description="Get next ticket", response_model=CodeNextResponse)
+@router.post("/next", description="Get next ticket", response_model=NextCodeCto)
 async def get_next_code(request: CodeRequest, access_service: AccessCodeService = Depends(AccessCodeService)):
     pass
     # return await access_service.get_next_ticket_number(request)
