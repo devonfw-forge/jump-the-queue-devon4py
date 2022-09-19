@@ -5,13 +5,6 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
-class CreateQueueRequest:
-    async def get_queue(self):
-        pass
-
-
-
-
 ##############################
 #### classes status queue
 ###############################
