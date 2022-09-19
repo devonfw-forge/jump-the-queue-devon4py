@@ -7,13 +7,6 @@ from app.domain.access_management.models import AccessCode
 from app.domain.access_management.repositories.access_code import AccessCodeSQLRepository
 
 
-class RemainingCodes:
-    remainingCodes: int
-
-
-class NextCodeCto:
-    accessCode: AccessCode
-    remainingCodes: RemainingCodes
 
 # class QueueSerializer(serializers.ModelSerializer):
 #     class Meta:
@@ -48,29 +41,15 @@ new_tickets = ticket_generator()
 
 #print(new_tickets)
 
-def get_or_create_today_queue_serializer():
-    """
-    Returns daily queue serializer if exists else create it and return
-    """
-    # now = datetime.now()
-    # try:
-    #     todaysQueue = Queue.get(
-    #         createdDate__year=now.year,
-    #         createdDate__month=now.month,
-    #         createdDate__day=now.day
-    #         )
-    #     serializer = QueueSerializer(todaysQueue)
-    #     return serializer
-    # except Queue.:
-    #     newQueue = Queue()
-    #     newQueue.save()
-    #     newSerializer = QueueSerializer(newQueue)
-    #     return newSerializer
+
+
 class AccessCodeService:
 
     def __init__(self, repository: AccessCodeSQLRepository = Depends(AccessCodeSQLRepository)):
         self.access_code_repo = repository
 
+
+    # REQUEST
     async def get_ticket_number(self, request):
         pass
         # if request.method == 'POST':
@@ -91,3 +70,4 @@ class AccessCodeService:
 
     async def get_remaining_code(self, request):
         pass
+
