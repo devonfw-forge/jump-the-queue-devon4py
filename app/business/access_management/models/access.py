@@ -37,10 +37,12 @@ class EstimatedTimeResponse(BaseModel):
     miliseconds: datetime
     defaultTimeByUserInMs: datetime
 
-
-
-
-
+class AccessCodeStatus(Enum):
+    WAITING = 'WAITING'
+    ATTENDING = 'ATTENDING'
+    ATTENDED = 'ATTENDED'
+    SKIPPED = 'SKIPPED'
+    NOTSTARTED = 'NOTSTARTED'
 
 
 

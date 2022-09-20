@@ -1,6 +1,4 @@
 from typing import Callable, Any
-from fastapi_keycloak import OIDCUser
-
 
 # Shortcut for checking current user and roles
 from app.common.core.identity_provider import User
@@ -15,7 +13,7 @@ def get_user(required_roles: list[str] | None = None) -> Callable[[Any], User]:
             required_roles List[str]: List of role names required for this endpoint
 
         Returns:
-            OIDCUser: Decoded JWT content
+            Decoded JWT content
 
         Raises:
             ExpiredSignatureError: If the token is expired (exp > datetime.now())
