@@ -1,6 +1,7 @@
 from unittest import IsolatedAsyncioTestCase
 from unittest.mock import MagicMock
 from app.business.queue_management.services.queue import QueueService, parse_to_dto
+from app.domain.queue_management.models import Queue
 from app.domain.queue_management.repositories.queue import QueueSQLRepository
 
 
@@ -14,32 +15,28 @@ class QueueServiceTests(IsolatedAsyncioTestCase):
             self.mock_queue_repo
         )
 
-    async def test_get_todays_queue_is_none(self):
-
-        queue_to_return = self.mock_queue_repo.get_today_queue.return_value
+    async def test_get_todays_queue_is_none_should_create_it(self):
+        self.mock_queue_repo.get_today_queue.return_value = None
+        self.mock_queue_repo.create_queue.return_value = Queue(id=1)
 
         # Call to be tested
-        queue_return = self.queue_service.get_todays_queue
+        await self.queue_service.get_todays_queue()
 
-        if queue_to_return is not None:
-            print("comprobado 1")
-            assert self.mock_queue_repo.create_queue.called == False
-        # Assert 1 (if is None, create it)
-        queue_to_return = None
-        if queue_to_return is None:
-            print("comprobado 2")
-            assert await self.mock_queue_repo.create_queue()
+        self.mock_queue_repo.create_queue.assert_called()
 
-        # Assert 2 (If is not None, don`t call to create it)
+    async def test_get_todays_queue_is_not_none_should_return_it(self):
+        self.mock_queue_repo.get_today_queue.return_value = Queue(id=1)
 
+        # Call to be tested
+        await self.queue_service.get_todays_queue()
 
+        self.mock_queue_repo.create_queue.assert_not_called()
 
-        # Assert 3
-
-        # result = self.queue_service.get_todays_queue
-        # assert parse_to_dto(result)
-        #result = await self.queue_service.get_todays_queue()
-       # print(type(result))
-
-        # Assserts
-        #assert parse_to_dto(result)
+    async def test_parsing_entity_to_dto(self):
+        queue = Queue(id=1)
+        dto = parse_to_dto(queue)
+        assert queue.id == dto.id
+        assert queue.started == dto.started
+        assert queue.modificationCounter == dto.modificationCounter
+        assert queue.created_date == dto.createdDate
+        assert queue.min_attention_time == dto.minAttentionTime
