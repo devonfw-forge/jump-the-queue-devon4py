@@ -16,14 +16,25 @@ class QueueServiceTests(IsolatedAsyncioTestCase):
             self.mock_queue_repo
         )
 
-    async def test_start_queue_when_should_be_closed(self):
-        self.mock_queue_repo.update_queue.return_value = Queue(id=1)
+    async def test_start_queue_when_is_closed(self):
+        test_queue = Queue(id=1, started=False)
+        self.mock_queue_repo.get.return_value = test_queue
 
         # Call to be tested
-        await self.queue_service.start_queue(request=True)
+        updated_queue = await self.queue_service.start_queue(uid=1)
 
-        self.mock_queue_repo.update_queue.assert_called()
+        self.mock_queue_repo.save.assert_called()
+        assert updated_queue.started == True
 
+    async def test_start_queue_when_is_started(self):
+        test_queue = Queue(id=1, started=True)
+        self.mock_queue_repo.get.return_value = test_queue
+
+        # Call to be tested
+        updated_queue = await self.queue_service.start_queue(uid=1)
+
+        self.mock_queue_repo.save.assert_not_called()
+        assert updated_queue.started == True
 
 
 

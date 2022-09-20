@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import Depends
 from app.business.queue_management.models.queue import QueueDto
 from app.domain.queue_management.models import Queue
@@ -9,6 +11,7 @@ def parse_to_dto(queue_entity: Queue):
                     minAttentionTime=queue_entity.min_attention_time, started=queue_entity.started,
                     createdDate=queue_entity.created_date)
 
+log = logging.getLogger(__name__)
 
 class QueueService:
 
@@ -23,9 +26,16 @@ class QueueService:
 
         return queue_dto
 
-    async def start_queue(self, request):
-        current_queue = await self.queue_repo.get_today_queue()
-        if current_queue is not False:
-            return await self.queue_repo.update_queue()
+    async def start_queue(self, uid: int) -> QueueDto:
+        """
+        Start the Queue when is closed
+        :param uid: the UID of the Queue
+        :return: the Queue
+        """
+        current_queue = await self.queue_repo.get(uid=uid)
+        if current_queue.started is not False:
+            current_queue.started = True
+            await self.queue_repo.save(model=current_queue)
         else:
-            print("Queue already started")
+            log.info("Queue already started")
+        return parse_to_dto(current_queue)
