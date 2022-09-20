@@ -24,5 +24,8 @@ class QueueService:
         return queue_dto
 
     async def start_queue(self, request):
-        # TODO: started a True ver la US de start queue
-        pass
+        current_queue = await self.queue_repo.get_today_queue()
+        if current_queue is not False:
+            return await self.queue_repo.update_queue()
+        else:
+            print("Queue already started")

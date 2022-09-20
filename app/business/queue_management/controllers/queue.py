@@ -15,7 +15,7 @@ async def get_todays_queue(queue_service: QueueService = Depends(QueueService)):
 
 
 @router.post("/start", description="Starting the queue", response_model=QueueDto)
-async def start_queue(request: QueueDto,  queue_service: QueueService = Depends(QueueService)):
+async def start_queue(request: QueueDto, queue_service: QueueService = Depends(QueueService)):
     return await queue_service.start_queue(request)
 
 

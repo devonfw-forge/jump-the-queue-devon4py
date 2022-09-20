@@ -20,3 +20,11 @@ class QueueSQLRepository(BaseSQLRepository[Queue]):
         queue = Queue()
         await self.add(model=queue)
         return queue
+
+    async def update_queue(self):
+        current_queue = await self.get_today_queue()
+        current_queue.started = True
+        current_queue.modificationCounter = 0
+        await self.add(model=current_queue)
+        return current_queue
+
