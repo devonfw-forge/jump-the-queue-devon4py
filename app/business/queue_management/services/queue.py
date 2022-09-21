@@ -11,7 +11,9 @@ def parse_to_dto(queue_entity: Queue):
                     minAttentionTime=queue_entity.min_attention_time, started=queue_entity.started,
                     createdDate=queue_entity.created_date)
 
+
 log = logging.getLogger(__name__)
+
 
 class QueueService:
 
@@ -33,7 +35,7 @@ class QueueService:
         :return: the Queue
         """
         current_queue = await self.queue_repo.get(uid=uid)
-        if current_queue.started is not False:
+        if current_queue.started is False:
             current_queue.started = True
             await self.queue_repo.save(model=current_queue)
         else:
