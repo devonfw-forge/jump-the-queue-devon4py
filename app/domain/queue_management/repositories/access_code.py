@@ -6,9 +6,9 @@ from sqlmodel import select
 from typing import Optional
 
 from app.common.base.base_repository import BaseSQLRepository
-from app.domain.access_management.models.access_code import AccessCode
+from app.domain.queue_management.models.access_code import AccessCode
 from app.common.infra.sql_adaptors import AsyncSession, get_async_session
-from app.domain.access_management.models.access_code import Status
+from app.domain.queue_management.models.access_code import Status
 
 logger = logging.getLogger(__name__)
 

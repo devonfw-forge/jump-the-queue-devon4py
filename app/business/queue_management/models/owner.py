@@ -3,8 +3,7 @@ from uuid import UUID
 from pydantic import BaseModel
 from sqlmodel import Field
 
-from app.common.base.base_entity import BaseUUIDModel
-from app.domain.owner_management.models.owner import Role
+from app.domain.queue_management.models.owner import Role
 
 
 class CreateOwnerRequest(BaseModel):

@@ -1,10 +1,9 @@
-import logging
 from fastapi import Depends
 from typing import Optional
 from app.business.queue_management.services.queue import QueueService
-from app.domain.access_management.models import AccessCode
-from app.domain.access_management.repositories.access_code import AccessCodeSQLRepository
-from app.business.access_management.models.access import AccessCodeDto
+from app.domain.queue_management.models import AccessCode
+from app.domain.queue_management.repositories.access_code import AccessCodeSQLRepository
+from app.business.queue_management.models.access import AccessCodeDto
 
 
 def parse_to_dto(access_code_entity: AccessCode) -> Optional[AccessCodeDto]:
