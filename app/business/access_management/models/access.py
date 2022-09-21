@@ -9,7 +9,7 @@ from app.domain.access_management.models.access_code import Status
 
 
 class AccessCodeDto(BaseModel):
-    id: int
+    id: UUID
     modificationCounter: int
     code: str
     uuid: UUID
