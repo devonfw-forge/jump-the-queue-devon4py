@@ -1,3 +1,4 @@
+import logging
 from unittest import IsolatedAsyncioTestCase
 from unittest.mock import MagicMock
 from app.business.access_management.services.access import AccessCodeService, parse_to_dto
@@ -6,6 +7,8 @@ from app.domain.access_management.models import AccessCode
 from app.business.queue_management.models.queue import QueueDto
 from app.business.queue_management.services.queue import QueueService
 from app.domain.access_management.repositories.access_code import AccessCodeSQLRepository
+
+logger = logging.getLogger(__name__)
 
 
 class AccessCodeServiceTests(IsolatedAsyncioTestCase):
@@ -57,6 +60,22 @@ class AccessCodeServiceTests(IsolatedAsyncioTestCase):
         response = await self.access_code_service.get_current_ticket_number()
 
         assert response == parse_to_dto(access_code)
+
+    async def test_get_remaining_codes_is_called_and_return_zero_values(self):
+        self.mock_access_repo.get_remaining_codes.return_value = 0
+        # Call to be tested
+        returned = await self.access_code_service.get_remaining_codes()
+        # Asserts
+        assert returned == 0
+        self.mock_access_repo.get_remaining_codes.assert_called()
+
+    async def test_get_remaining_codes_is_called_and_return_values(self):
+        self.mock_access_repo.get_remaining_codes.return_value = 1
+        # Call to be tested
+        returned = await self.access_code_service.get_remaining_codes()
+        # Asserts
+        assert returned >= 0
+        self.mock_access_repo.get_remaining_codes.assert_called()
 
     async def test_parsing_entity_to_dto_when_entity_exists(self):
         access_code = AccessCode(
