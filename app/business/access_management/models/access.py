@@ -8,8 +8,6 @@ from app.domain.access_management.models import AccessCode
 from app.domain.access_management.models.access_code import Status
 
 
-
-
 class AccessCodeDto(BaseModel):
     id: int
     code: str
@@ -24,6 +22,7 @@ class AccessCodeDto(BaseModel):
 class RemainingCodes(BaseModel):
     remainingCodes: int
 
+
 class NextCodeCto(BaseModel):
     accessCode: AccessCode
     remainingCodes: RemainingCodes
@@ -37,15 +36,10 @@ class EstimatedTimeResponse(BaseModel):
     miliseconds: datetime
     defaultTimeByUserInMs: datetime
 
+
 class AccessCodeStatus(Enum):
     WAITING = 'WAITING'
     ATTENDING = 'ATTENDING'
     ATTENDED = 'ATTENDED'
     SKIPPED = 'SKIPPED'
     NOTSTARTED = 'NOTSTARTED'
-
-
-
-
-
-

@@ -1,8 +1,7 @@
-from datetime import datetime
+import logging
 
 from fastapi import Depends
-from sqlalchemy.util.queue import Queue
-
+from app.business.access_management.models.access import AccessCodeDto
 from app.domain.access_management.models import AccessCode
 from app.domain.access_management.repositories.access_code import AccessCodeSQLRepository
 
@@ -68,6 +67,10 @@ class AccessCodeService:
     async def get_estimated_time(self, request):
         pass
 
-    async def get_remaining_code(self, request):
-        pass
+    async def get_remaining_codes(self) -> int:
+        # Get amount of remaining codes (pending/waiting to be called)
+        codes = await self.access_code_repo.get_remaining_codes()
+
+        return codes
+
 
