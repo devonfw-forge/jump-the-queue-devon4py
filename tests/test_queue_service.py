@@ -40,3 +40,23 @@ class QueueServiceTests(IsolatedAsyncioTestCase):
         assert queue.modificationCounter == dto.modificationCounter
         assert queue.created_date == dto.createdDate
         assert queue.min_attention_time == dto.minAttentionTime
+
+    async def test_start_queue_when_is_closed(self):
+        test_queue = Queue(id=1, started=False)
+        self.mock_queue_repo.get.return_value = test_queue
+
+        # Call to be tested
+        updated_queue = await self.queue_service.start_queue(uid=1)
+
+        self.mock_queue_repo.save.assert_called()
+        assert updated_queue.started == True
+
+    async def test_start_queue_when_is_started(self):
+        test_queue = Queue(id=1, started=True)
+        self.mock_queue_repo.get.return_value = test_queue
+
+        # Call to be tested
+        updated_queue = await self.queue_service.start_queue(uid=1)
+
+        self.mock_queue_repo.save.assert_not_called()
+        assert updated_queue.started == True
