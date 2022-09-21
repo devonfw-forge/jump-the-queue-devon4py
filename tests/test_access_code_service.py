@@ -1,12 +1,12 @@
 import logging
 from unittest import IsolatedAsyncioTestCase
 from unittest.mock import MagicMock
-from app.business.access_management.services.access import AccessCodeService, parse_to_dto
+from app.business.queue_management.services.access import AccessCodeService, parse_to_dto
 from app.common.utils import get_current_time, get_current_date
 from app.domain.access_management.models import AccessCode
 from app.business.queue_management.models.queue import QueueDto
 from app.business.queue_management.services.queue import QueueService
-from app.domain.access_management.repositories.access_code import AccessCodeSQLRepository
+from app.domain.queue_management.repositories.access_code import AccessCodeSQLRepository
 
 logger = logging.getLogger(__name__)
 

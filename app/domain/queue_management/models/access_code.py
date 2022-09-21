@@ -4,8 +4,6 @@ from typing import Optional
 from uuid import UUID
 from sqlmodel import Field
 from app.common.base.base_entity import BaseUUIDModel
-from app.domain.owner_management.models import Visitor
-from app.domain.queue_management.models import Queue
 
 
 class Status(str, Enum):

@@ -1,9 +1,9 @@
 import logging
 from fastapi import APIRouter, Depends
 from typing import Optional
-from app.business.access_management.models.access import EstimatedTimeResponse, AccessCodeDto, NextCodeCto, \
+from app.business.queue_management.models.access import EstimatedTimeResponse, NextCodeCto, \
     RemainingCodes, UuidRequest, AccessCodeDto
-from app.business.access_management.services.access import AccessCodeService
+from app.business.queue_management.services.access import AccessCodeService
 
 router = APIRouter(prefix="/accesscodemanagement/v1/accesscode")
 

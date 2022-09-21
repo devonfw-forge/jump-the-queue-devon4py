@@ -1,11 +1,9 @@
 from datetime import datetime
 from enum import Enum
 from uuid import UUID
-from typing import Optional
 from pydantic import BaseModel
 from typing import Optional
-from app.domain.access_management.models import AccessCode
-from app.domain.access_management.models.access_code import Status
+from app.domain.queue_management.models.access_code import Status, AccessCode
 
 
 class AccessCodeDto(BaseModel):
