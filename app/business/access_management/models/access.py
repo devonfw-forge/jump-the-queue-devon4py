@@ -1,9 +1,7 @@
 from datetime import datetime
 from enum import Enum
 from uuid import UUID
-
 from pydantic import BaseModel
-
 from app.domain.access_management.models import AccessCode
 from app.domain.access_management.models.access_code import Status
 

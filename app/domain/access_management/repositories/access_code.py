@@ -1,16 +1,13 @@
 import logging
-
 from fastapi import Depends
 from sqlalchemy import func
 from sqlmodel import select
-
 from app.common.base.base_repository import BaseSQLRepository
 from app.common.infra.sql_adaptors import AsyncSession, get_async_session
 from app.domain.access_management.models import AccessCode
 from app.domain.access_management.models.access_code import Status
 
 logger = logging.getLogger(__name__)
-
 
 class AccessCodeSQLRepository(BaseSQLRepository[AccessCode]):
     def __init__(self, session: AsyncSession = Depends(get_async_session)):

@@ -1,6 +1,4 @@
-import logging
 from fastapi import APIRouter, Depends
-
 from app.business.access_management.models.access import EstimatedTimeResponse, AccessCodeDto, NextCodeCto, \
     RemainingCodes, UuidRequest, AccessCodeDto
 from app.business.access_management.services.access import AccessCodeService
