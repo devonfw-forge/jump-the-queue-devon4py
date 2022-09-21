@@ -20,3 +20,8 @@ class QueueSQLRepository(BaseSQLRepository[Queue]):
         queue = Queue()
         await self.add(model=queue)
         return queue
+
+    async def save(self, *, model: Queue, refresh: bool = False):
+        model.modificationCounter += 1
+        return await super().save(model=model, refresh=refresh)
+
