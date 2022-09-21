@@ -1,8 +1,6 @@
-import logging
 from fastapi import APIRouter, Depends
-
 from app.business.access_management.models.access import EstimatedTimeResponse, AccessCodeDto, NextCodeCto, \
-    RemainingCodes, UuidRequest,  AccessCodeDto
+    RemainingCodes, UuidRequest, AccessCodeDto
 from app.business.access_management.services.access import AccessCodeService
 
 router = APIRouter(prefix="/accesscodemanagement/v1/accesscode")
@@ -27,12 +25,13 @@ async def get_code_by_uuid(request: UuidRequest, access_service: AccessCodeServi
 
 
 @router.post("/estimated", description="Get estimated time by code", response_model=EstimatedTimeResponse)
-async def get_estimated_time_by_code(request: AccessCodeDto, access_service: AccessCodeService = Depends(AccessCodeService)):
+async def get_estimated_time_by_code(request: AccessCodeDto,
+                                     access_service: AccessCodeService = Depends(AccessCodeService)):
     pass
     # return await access_service.get_estimated_time(request)
 
 
 @router.post("/remaining", description="Get remaining codes count", response_model=RemainingCodes)
 async def get_remaining_codes_count(access_service: AccessCodeService = Depends(AccessCodeService)):
-    pass
-   # return await access_service.get_remaining_code(request)
+    qty = await access_service.get_remaining_codes()
+    return RemainingCodes(remainingCodes=qty)
