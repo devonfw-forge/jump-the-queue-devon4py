@@ -20,7 +20,7 @@ class QueueService:
     def __init__(self, repository: QueueSQLRepository = Depends(QueueSQLRepository)):
         self.queue_repo = repository
 
-    async def get_todays_queue(self):
+    async def get_todays_queue(self) -> QueueDto:
         queue = await self.queue_repo.get_today_queue()
         if queue is None:
             queue = await self.queue_repo.create_queue()

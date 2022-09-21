@@ -18,12 +18,12 @@ class Status(str, Enum):
 
 class AccessCode(BaseUUIDModel, table=True):
     code: str
-    uuid: UUID
+    modification_counter: int = Field(default=0)
     created_time: datetime
-    start_time: datetime
-    end_time: datetime
+    start_time: Optional[datetime] = Field(default=None)
+    end_time: Optional[datetime] = Field(default=None)
     status: Status
 
-    fk_queue: Optional['Queue'] = Field(default=None, foreign_key="queue.id")
-    fk_visitor: Optional['Visitor'] = Field(default=None, foreign_key="visitor.id")
+    fk_queue: Optional[int] = Field(default=None, foreign_key="queue.id")
+    fk_visitor: Optional[UUID] = Field(default=None, foreign_key="visitor.id")
 
