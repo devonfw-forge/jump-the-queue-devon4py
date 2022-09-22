@@ -19,10 +19,19 @@ class AccessCodeSQLRepository(BaseSQLRepository[AccessCode]):
 
     async def get_by_queue_status_attending(self, queue_id: UUID) -> Optional[AccessCode]:
         access_code = await self.session.exec(select(AccessCode).where(AccessCode.fk_queue == queue_id, AccessCode.
-                                                                       status == 'ATTENDING'))
+                                                                       status == Status.Attending))
         return access_code.one_or_none()
 
     async def get_remaining_codes(self) -> int:
         waiting = await self.session.exec(select([func.count(AccessCode.id)])
                                           .where(AccessCode.status == Status.Waiting))
         return waiting.one()  # Type: ignore
+
+    async def get_by_queue_first_waiting(self, queue_id: UUID) -> Optional[AccessCode]:
+        access_code = await self.session.exec(select(AccessCode).where(AccessCode.fk_queue == queue_id, AccessCode.
+                                                                       status == Status.Waiting))
+        return access_code.first()
+
+    async def save(self, *, model: AccessCode, refresh: bool = True):
+        model.modification_counter += 1
+        return await super().save(model=model, refresh=refresh)

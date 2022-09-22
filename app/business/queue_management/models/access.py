@@ -3,7 +3,7 @@ from enum import Enum
 from uuid import UUID
 from pydantic import BaseModel
 from typing import Optional
-from app.domain.queue_management.models.access_code import Status, AccessCode
+from app.domain.queue_management.models.access_code import Status
 
 
 class AccessCodeDto(BaseModel):
@@ -23,7 +23,7 @@ class RemainingCodes(BaseModel):
 
 
 class NextCodeCto(BaseModel):
-    accessCode: AccessCode
+    accessCode: Optional[AccessCodeDto]
     remainingCodes: RemainingCodes
 
 
