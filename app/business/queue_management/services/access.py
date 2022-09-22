@@ -1,9 +1,16 @@
+import logging
+import uuid
+
 from fastapi import Depends
 from typing import Optional
+
 from app.business.queue_management.services.queue import QueueService
+from app.business.queue_management.services.visitor import VisitorService
 from app.domain.queue_management.models import AccessCode
 from app.domain.queue_management.repositories.access_code import AccessCodeSQLRepository
 from app.business.queue_management.models.access import AccessCodeDto
+
+logger = logging.getLogger(__name__)
 
 
 def parse_to_dto(access_code_entity: AccessCode) -> Optional[AccessCodeDto]:
@@ -26,9 +33,10 @@ def parse_to_dto(access_code_entity: AccessCode) -> Optional[AccessCodeDto]:
 class AccessCodeService:
 
     def __init__(self, repository: AccessCodeSQLRepository = Depends(AccessCodeSQLRepository),
-                 queue_service: QueueService = Depends(QueueService)):
+                 queue_service: QueueService = Depends(QueueService), visitor_service: VisitorService = Depends(VisitorService)):
         self.access_code_repo = repository
         self.queue_service = queue_service
+        self._visitor_service = visitor_service
 
     async def get_current_ticket_number(self) -> Optional[AccessCodeDto]:
         today_queue = await self.queue_service.get_todays_queue()
@@ -37,11 +45,36 @@ class AccessCodeService:
 
         return current_ticket
 
+    async def get_access_code(self, uid):
+        # recuperar la cola de hoy
+        today_queue = await self.queue_service.get_todays_queue()
+        # extraer si el visitor está en la cola de hoy
+        access_code = await self.access_code_repo.get_access_code(today_queue.id, uid)
+        # comparar si el resultado esta vacio (devuelve uuid o no) y si no lo está lo crea
+        if not access_code:
+            last_access_code = await self.access_code_repo.get_last_access_code(today_queue.id)
+            if not last_access_code:
+                new_access_code = 'Q001'
+                logger.info(new_access_code)
+            else:
+                last_code_raw = int(last_access_code.code[1:], 10)
+                if last_code_raw > 999:
+                    next_code_raw = 1
+                else:
+                    next_code_raw = last_code_raw + 1
+                new_access_code = last_access_code.code[0] + '{0:0>3}'.format(next_code_raw)
+                # If Q1000 reset to Q001
+            visitor = await self._visitor_service.get_or_create_visitor(uid=uid)
+            logger.info(new_access_code)
+            access_code = await self.access_code_repo.create_code(queue_id=today_queue.id, visitor_id=visitor.id, new_access_code=new_access_code)
+
+        return parse_to_dto(access_code)
+
+
+
     async def get_next_ticket_number(self, request):
         pass
 
-    async def get_uuid(self, request):
-        pass
 
     async def get_estimated_time(self, request):
         pass
@@ -56,5 +89,3 @@ class AccessCodeService:
         # Get amount of remaining codes (pending/waiting to be called)
         codes = await self.access_code_repo.get_remaining_codes()
         return codes
-
-

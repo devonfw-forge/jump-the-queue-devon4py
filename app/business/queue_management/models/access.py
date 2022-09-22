@@ -28,7 +28,7 @@ class NextCodeCto(BaseModel):
 
 
 class UuidRequest(BaseModel):
-    uuid: str
+    uuid: UUID
 
 
 class EstimatedTimeResponse(BaseModel):
