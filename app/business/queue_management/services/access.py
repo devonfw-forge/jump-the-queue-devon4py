@@ -46,11 +46,17 @@ class AccessCodeService:
         return current_ticket
 
     async def get_access_code(self, uid):
-        # recuperar la cola de hoy
+        """
+        The function gets the access code for today's current queue and the uuid provided by the front end application.
+        Retrieving the last access code if it exists and if it doesn't create it.
+        Params: Type: UUID
+        Returns: Dto AccessCode.
+        """
+        # Recovering the current queue
         today_queue = await self.queue_service.get_todays_queue()
-        # extraer si el visitor está en la cola de hoy
+        # Extracting if the access code exist
         access_code = await self.access_code_repo.get_access_code(today_queue.id, uid)
-        # comparar si el resultado esta vacio (devuelve uuid o no) y si no lo está lo crea
+        # Comparing if the result is empty (return uuid or not) and if it doesn't exist create it
         if not access_code:
             last_access_code = await self.access_code_repo.get_last_access_code(today_queue.id)
             if not last_access_code:

@@ -13,6 +13,12 @@ class VisitorSQLRepository(BaseSQLRepository[Visitor]):
         super().__init__(Visitor, session)
 
     async def create_visitor(self, uid) -> Visitor:
+        """
+        Function to create a new visitor
+        Args: uid
+        Use: method add() from base_repository of common files
+        Returns: an object of type entity Visitor
+        """
         visitor = Visitor(id=uid)
         await self.add(model=visitor)
         return visitor
