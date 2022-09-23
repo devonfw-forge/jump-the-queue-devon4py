@@ -20,6 +20,7 @@ class VisitorServiceTests(IsolatedAsyncioTestCase):
         self.mock_visitor_repo.create_visitor.return_value = Visitor(
             id='3fa85f64-5717-4562-b3fc-2c963f66afa6'
         )
+
         def mocking_create_visitor(uid: str):
             if uid == "test-visitor":
                 return test_entity
@@ -50,4 +51,3 @@ class VisitorServiceTests(IsolatedAsyncioTestCase):
         response = await self.visitor_service.get_or_create_visitor(uid='test-visitor')
         self.mock_visitor_repo.create_visitor.assert_not_called()
         assert response.id == test_entity.id
-
