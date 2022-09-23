@@ -18,6 +18,6 @@ class VisitorService:
         try:
             visitor = await self.visitor_repo.get(uid=uid)
         except NotFoundException:
-            visitor = await self.visitor_repo.create_visitor(uid)
+            visitor = await self.visitor_repo.create_visitor(uid=uid)
         return visitor
 
