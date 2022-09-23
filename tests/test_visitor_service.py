@@ -1,4 +1,3 @@
-import logging
 from unittest import IsolatedAsyncioTestCase
 from unittest.mock import MagicMock
 from app.business.queue_management.services.visitor import VisitorService
@@ -46,7 +45,7 @@ class VisitorServiceTests(IsolatedAsyncioTestCase):
         test_entity = Visitor(
             id='test-visitor'
         )
-        self.mock_visitor_repo.get.side_effect = mocking_create_visitor
+        self.mock_visitor_repo.side_effect = mocking_create_visitor
         # Call to be tested
         response = await self.visitor_service.get_or_create_visitor(uid='test-visitor')
         self.mock_visitor_repo.create_visitor.assert_not_called()

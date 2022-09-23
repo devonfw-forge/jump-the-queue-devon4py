@@ -1,14 +1,15 @@
 import logging
 import uuid
-
 from fastapi import Depends
 from typing import Optional
 
 from app.business.queue_management.services.queue import QueueService
 from app.business.queue_management.services.visitor import VisitorService
 from app.domain.queue_management.models import AccessCode
+from app.domain.queue_management.models.access_code import Status
 from app.domain.queue_management.repositories.access_code import AccessCodeSQLRepository
-from app.business.queue_management.models.access import AccessCodeDto
+from app.business.queue_management.models.access import AccessCodeDto, NextCodeCto, RemainingCodes
+from app.common.utils import get_current_time
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,27 @@ class AccessCodeService:
 
         return current_ticket
 
+    async def get_next_ticket_number(self) -> Optional[NextCodeCto]:
+        today_queue = await self.queue_service.get_todays_queue()
+        current_access_code = await self.access_code_repo.get_by_queue_status_attending(today_queue.id)
+        if current_access_code:
+            current_access_code.status = Status.Attended
+            current_access_code.end_time = get_current_time()
+            await self.access_code_repo.save(model=current_access_code)
+        next_access_code = await self.access_code_repo.get_by_queue_first_waiting(today_queue.id)
+        if next_access_code:
+            next_access_code.status = Status.Attending
+            next_access_code.start_time = get_current_time()
+            await self.access_code_repo.save(model=next_access_code)
+        next_ticket: NextCodeCto = NextCodeCto(
+            accessCode=parse_to_dto(next_access_code),
+            remainingCodes=RemainingCodes(
+                remainingCodes=await self.access_code_repo.get_remaining_codes()
+            )
+        )
+
+        return next_ticket
+
     async def get_access_code(self, uid):
         """
         The function gets the access code for today's current queue and the uuid provided by the front end application.
@@ -76,11 +98,8 @@ class AccessCodeService:
 
         return parse_to_dto(access_code)
 
-
-
-    async def get_next_ticket_number(self, request):
+    async def get_uuid(self, request):
         pass
-
 
     async def get_estimated_time(self, request):
         pass
@@ -95,3 +114,5 @@ class AccessCodeService:
         # Get amount of remaining codes (pending/waiting to be called)
         codes = await self.access_code_repo.get_remaining_codes()
         return codes
+
+
