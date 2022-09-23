@@ -19,14 +19,14 @@ async def get_current_code(access_service: AccessCodeService = Depends(AccessCod
 
 @router.post("/next", description="Get next ticket", response_model=NextCodeCto)
 async def call_next_code(access_service: AccessCodeService = Depends(AccessCodeService)):
-    pass
-    # return await access_service.get_next_ticket_number(request)
+    logger.info("Retrieve next ticket")
+    return await access_service.get_next_ticket_number()
 
 
-@router.post("/uuid", description="Get uuid", response_model=AccessCodeDto)
-async def get_code_by_uuid(request: UuidRequest, access_service: AccessCodeService = Depends(AccessCodeService)):
-    pass
-    # return await access_service.get_uuid(request)
+@router.post("/uuid/", description="Get uuid", response_model=AccessCodeDto)
+async def get_access_code(request: UuidRequest, access_service: AccessCodeService = Depends(AccessCodeService)):
+    # comprobar si esta en la cola o no
+    return await access_service.get_access_code(request.uuid)
 
 
 @router.post("/estimated", description="Get estimated time by code", response_model=EstimatedTimeResponse)
