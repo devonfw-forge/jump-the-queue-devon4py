@@ -6,8 +6,8 @@ from unittest.mock import MagicMock
 
 from app.business.queue_management.models.access import NextCodeCto, RemainingCodes
 from app.business.queue_management.services.access import AccessCodeService, parse_to_dto
-from app.common.utils import get_current_date
 from app.domain.queue_management.models import AccessCode
+from app.common.utils import get_current_time, get_current_date
 from app.business.queue_management.models.queue import QueueDto
 from app.business.queue_management.services.queue import QueueService
 from app.domain.queue_management.models.access_code import Status
@@ -58,7 +58,7 @@ class AccessCodeServiceTests(IsolatedAsyncioTestCase):
         self.mock_access_repo = MagicMock(AccessCodeSQLRepository)
         self.mock_queue_service = MagicMock(QueueService)
 
-        # QueueService
+        # AccessCodeService
         self.access_code_service = AccessCodeService(
             self.mock_access_repo,
             self.mock_queue_service
@@ -161,3 +161,19 @@ class AccessCodeServiceTests(IsolatedAsyncioTestCase):
         print(response)
         self.mock_access_repo.save.assert_called()
         assert response == get_next_code_dto(get_access_code(Status.Attending, start_time=response.accessCode.starTime), 1)
+
+    async def test_get_access_code_if_not_exist_in_the_queue(self):
+        # create a figurate uuid
+        uid = "73b74c82-219d-4cd7-b939-6623fc2fae57"
+        today_queue_mock = await self.mock_queue_service.get_todays_queue()
+
+        # Call to be tested
+        result = await self.mock_access_repo.get_access_code(today_queue_mock.id, uid)
+        response = await self.mock_access_repo.get_last_access_code(today_queue_mock.uid)
+        assert response
+
+    async def test_get_last_access_code_should_be_a_value(self):
+        today_queue_mock = await self.mock_queue_service.get_todays_queue()
+        last_access_code = await self.mock_access_repo.get_last_access_code(today_queue_mock.id)
+        assert last_access_code
+
