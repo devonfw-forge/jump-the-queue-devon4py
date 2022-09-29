@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import Depends
+
 from app.business.queue_management.models.queue import QueueDto
 from app.domain.queue_management.models import Queue
 from app.domain.queue_management.repositories.queue import QueueSQLRepository

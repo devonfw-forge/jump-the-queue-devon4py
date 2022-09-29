@@ -16,8 +16,10 @@ class VisitorService:
                  with the function create_visitor with the same uid param
         """
         try:
+
             visitor = await self.visitor_repo.get(uid=uid)
         except NotFoundException:
+
             visitor = await self.visitor_repo.create_visitor(uid=uid)
         return visitor
 

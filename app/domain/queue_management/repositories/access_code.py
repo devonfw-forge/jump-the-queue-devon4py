@@ -43,7 +43,8 @@ class AccessCodeSQLRepository(BaseSQLRepository[AccessCode]):
         return access_code.one_or_none()
 
     async def get_last_access_code(self, queue_id) -> AccessCode:
-        last_code = await self.session.exec(select(AccessCode).where(AccessCode.fk_queue == queue_id).order_by(desc(AccessCode.created_time)))
+        last_code = await self.session.exec(
+            select(AccessCode).where(AccessCode.fk_queue == queue_id).order_by(desc(AccessCode.created_time)))
         return last_code.first()
 
     async def create_code(self, *, queue_id: int, visitor_id: UUID, new_access_code: str) -> AccessCode:
@@ -52,5 +53,30 @@ class AccessCodeSQLRepository(BaseSQLRepository[AccessCode]):
         return access
 
 
+    async def get_visitors_count(self, queue_id, uid):
+
+        try:
+            my_access = await self.session.exec(select(AccessCode).where(AccessCode.fk_visitor == uid, AccessCode.fk_queue == queue_id))
+            my_access = my_access.first()
+            visitors = await self.session.exec(select(AccessCode.code).where(AccessCode.fk_queue == queue_id, AccessCode.status =='WAITING', AccessCode.created_time < my_access.created_time))
+            return visitors.all()
+        except Exception as e:
+            logger.error(e)
+
+    async def get_attended_time(self, queue_id):
+        try:
+            attended_time = await self.session.exec(select(AccessCode.start_time).where(AccessCode.fk_queue == queue_id, (AccessCode.status =='ATTENDED')))
+            if attended_time is not None:
+                return attended_time.all()
+        except Exception as e:
+            logger.error(e)
 
 
+
+    async def get_last_before_me(self, queue_id, uid):
+        try:
+            last_before_me = await self.session.exec(select(AccessCode.created_time).where(AccessCode.fk_queue == queue_id, (AccessCode.status =='WAITING')))
+            last_before_me = last_before_me.all()
+            return last_before_me[-2]
+        except Exception as e:
+            logger.error(e)

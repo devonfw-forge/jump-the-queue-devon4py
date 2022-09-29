@@ -32,8 +32,8 @@ class UuidRequest(BaseModel):
 
 
 class EstimatedTimeResponse(BaseModel):
-    miliseconds: datetime
-    defaultTimeByUserInMs: datetime
+    miliseconds: int
+    defaultTimeByUserInMs: int
 
 
 class AccessCodeStatus(Enum):
