@@ -34,12 +34,19 @@ def parse_to_dto(access_code_entity: AccessCode) -> Optional[AccessCodeDto]:
 class AccessCodeService:
 
     def __init__(self, repository: AccessCodeSQLRepository = Depends(AccessCodeSQLRepository),
-                 queue_service: QueueService = Depends(QueueService), visitor_service: VisitorService = Depends(VisitorService)):
+                 queue_service: QueueService = Depends(QueueService),
+                 visitor_service: VisitorService = Depends(VisitorService)):
         self.access_code_repo = repository
         self.queue_service = queue_service
         self._visitor_service = visitor_service
 
     async def get_current_ticket_number(self) -> Optional[AccessCodeDto]:
+        """
+        The function gets the access code number of the current customer who is being attended from today's queue.
+        Retrieving the current access code if it exists, if not return none.
+        Params: None
+        Returns: AccessCodeDto | None.
+        """
         today_queue = await self.queue_service.get_todays_queue()
         access_code = await self.access_code_repo.get_by_queue_status_attending(today_queue.id)
         current_ticket = parse_to_dto(access_code)
