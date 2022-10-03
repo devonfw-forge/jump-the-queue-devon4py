@@ -8,9 +8,12 @@ from app.domain.queue_management.repositories.queue import QueueSQLRepository
 
 
 def parse_to_dto(queue_entity: Queue):
-    return QueueDto(id=queue_entity.id, modificationCounter=queue_entity.modificationCounter,
-                    minAttentionTime=queue_entity.min_attention_time, started=queue_entity.started,
-                    createdDate=queue_entity.created_date)
+    return QueueDto(
+        id=queue_entity.id,
+        modificationCounter=queue_entity.modificationCounter,
+        minAttentionTime=queue_entity.min_attention_time,
+        started=queue_entity.started,
+        createdDate=queue_entity.created_date)
 
 
 log = logging.getLogger(__name__)

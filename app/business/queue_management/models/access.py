@@ -11,9 +11,9 @@ class AccessCodeDto(BaseModel):
     modificationCounter: int
     code: str
     uuid: UUID
-    createdDate: datetime
-    starTime: Optional[datetime]
-    endTime: Optional[datetime]
+    createdDate: int
+    starTime: Optional[int]
+    endTime: Optional[int]
     status: Status
     queueId: int
 
