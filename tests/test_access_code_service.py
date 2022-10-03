@@ -21,7 +21,7 @@ def get_queue_dto() -> QueueDto:
     queue = QueueDto(
         id=1,
         modificationCounter=0,
-        minAttentionTime=12000,
+        minAttentionTime=120000,
         started=False,
         createdDate=get_current_date()
     )
@@ -235,15 +235,15 @@ class AccessCodeServiceTests(IsolatedAsyncioTestCase):
         self.mock_access_repo.get_access_code_attended.return_value = [(20, 5), (15, 10)]
 
         result = await self.access_code_service.get_estimated_time(parse_to_dto(get_access_code(Status.Waiting)))
-        assert result == parse_time_response(30)
+        assert result == parse_time_response(360000)
 
     async def test_get_estimated_time_non_waiting(self):
         self.mock_queue_service.get_todays_queue.return_value = get_queue_dto()
         self.mock_access_repo.get_visitors_count.return_value = []
-        self.mock_access_repo.get_access_code_attended.return_value = [(20, 5), (15, 10)]
+        self.mock_access_repo.get_access_code_attended.return_value = [(200000, 50000), (250000, 100000)]
 
         result = await self.access_code_service.get_estimated_time(parse_to_dto(get_access_code(Status.Waiting)))
-        assert result == parse_time_response(10)
+        assert result == parse_time_response(300000)
 
     async def test_get_estimated_time_non_waiting(self):
         self.mock_queue_service.get_todays_queue.return_value = get_queue_dto()
@@ -251,4 +251,12 @@ class AccessCodeServiceTests(IsolatedAsyncioTestCase):
         self.mock_access_repo.get_access_code_attended.return_value = []
 
         result = await self.access_code_service.get_estimated_time(parse_to_dto(get_access_code(Status.Waiting)))
-        assert result == parse_time_response(36000)
+        assert result == parse_time_response(360000)
+
+    async def test_leave_queue(self):
+        self.mock_queue_service.get_todays_queue.return_value = get_queue_dto()
+        self.mock_access_repo.get_access_code.return_value = get_access_code(Status.Waiting)
+
+        response = await self.access_code_service.leave_queue(get_access_code(Status.Waiting).fk_visitor)
+        self.mock_access_repo.save.assert_called()
+        response = get_access_code(Status.Skipped)
