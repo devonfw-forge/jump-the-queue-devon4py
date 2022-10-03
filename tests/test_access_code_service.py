@@ -5,8 +5,9 @@ from unittest import IsolatedAsyncioTestCase
 from unittest.mock import MagicMock
 
 from app.business.queue_management.models.access import NextCodeCto, RemainingCodes
-from app.business.queue_management.services.access import AccessCodeService, parse_to_dto
-from app.domain.queue_management.models import AccessCode
+from app.business.queue_management.services.access import AccessCodeService, parse_to_dto, parse_time_response
+from app.business.queue_management.services.visitor import VisitorService
+from app.domain.queue_management.models import AccessCode, Visitor
 from app.common.utils import get_current_time, get_current_date
 from app.business.queue_management.models.queue import QueueDto
 from app.business.queue_management.services.queue import QueueService
@@ -57,11 +58,13 @@ class AccessCodeServiceTests(IsolatedAsyncioTestCase):
         # Mocks
         self.mock_access_repo = MagicMock(AccessCodeSQLRepository)
         self.mock_queue_service = MagicMock(QueueService)
+        self.mock_visitor_service = MagicMock(VisitorService)
 
         # AccessCodeService
         self.access_code_service = AccessCodeService(
             self.mock_access_repo,
-            self.mock_queue_service
+            self.mock_queue_service,
+            self.mock_visitor_service
         )
 
     async def test_get_current_ticket_number_is_none(self):
@@ -105,7 +108,7 @@ class AccessCodeServiceTests(IsolatedAsyncioTestCase):
         assert access_code.id == dto.id
         assert access_code.code == dto.code
         assert access_code.modification_counter == dto.modificationCounter
-        assert access_code.created_time == dto.createdDate
+        assert int(access_code.created_time.timestamp()) == dto.createdDate
         assert access_code.start_time == dto.starTime
         assert access_code.end_time == dto.endTime
         assert access_code.fk_queue == dto.queueId
@@ -158,22 +161,94 @@ class AccessCodeServiceTests(IsolatedAsyncioTestCase):
 
         # Call to be tested
         response = await self.access_code_service.get_next_ticket_number()
-        print(response)
         self.mock_access_repo.save.assert_called()
         assert response == get_next_code_dto(get_access_code(Status.Attending, start_time=response.accessCode.starTime), 1)
 
-    async def test_get_access_code_if_not_exist_in_the_queue(self):
+
+    async def test_get_access_code_if_exist_in_the_queue(self):
         # create a figurate uuid
-        uid = "73b74c82-219d-4cd7-b939-6623fc2fae57"
-        today_queue_mock = await self.mock_queue_service.get_todays_queue()
+        self.mock_queue_service.get_todays_queue.return_value = get_queue_dto()
+        access_code = get_access_code(status=Status.Waiting)
+        self.mock_access_repo.get_access_code.return_value = access_code
 
         # Call to be tested
-        result = await self.mock_access_repo.get_access_code(today_queue_mock.id, uid)
-        response = await self.mock_access_repo.get_last_access_code(today_queue_mock.uid)
-        assert response
+        response = await self.access_code_service.get_access_code(access_code.fk_visitor)
+        self.mock_access_repo.get_last_access_code.assert_not_called()
+        self.mock_visitor_service.get_or_create_visitor.assert_not_called()
+        self.mock_access_repo.create_code.assert_not_called()
+        assert response == parse_to_dto(access_code)
+
+    async def test_get_access_code_if_first_in_the_queue(self):
+        # create a figurate uuid
+        access_code = get_access_code(status=Status.Waiting)
+        access_code.code = 'Q001'
+        self.mock_queue_service.get_todays_queue.return_value = get_queue_dto()
+        self.mock_access_repo.get_access_code.return_value = None
+        self.mock_access_repo.get_last_access_code.return_value = None
+        self.mock_visitor_service.get_or_create_visitor.return_value = Visitor(id=access_code.fk_visitor)
+        self.mock_access_repo.create_code.return_value = access_code
+
+        # Call to be tested
+        response = await self.access_code_service.get_access_code(access_code.fk_visitor)
+        assert response == parse_to_dto(access_code)
+
+    async def test_get_access_code_if_second_in_the_queue(self):
+        # create a figurate uuid
+        access_code_1 = get_access_code(status=Status.Waiting)
+        access_code_1.code = 'Q001'
+        access_code_2 = get_access_code(status=Status.Waiting)
+        access_code_2.code = 'Q002'
+        self.mock_queue_service.get_todays_queue.return_value = get_queue_dto()
+        self.mock_access_repo.get_access_code.return_value = None
+        self.mock_access_repo.get_last_access_code.return_value = access_code_1
+        self.mock_visitor_service.get_or_create_visitor.return_value = Visitor(id=access_code_2.fk_visitor)
+        self.mock_access_repo.create_code.return_value = access_code_2
+
+        # Call to be tested
+        response = await self.access_code_service.get_access_code(access_code_2.fk_visitor)
+        assert response == parse_to_dto(access_code_2)
+
+    async def test_get_access_code_if_last_in_the_queue(self):
+        # create a figurate uuid
+        access_code_1 = get_access_code(status=Status.Waiting)
+        access_code_1.code = 'Q999'
+        access_code_2 = get_access_code(status=Status.Waiting)
+        access_code_2.code = 'Q001'
+        self.mock_queue_service.get_todays_queue.return_value = get_queue_dto()
+        self.mock_access_repo.get_access_code.return_value = None
+        self.mock_access_repo.get_last_access_code.return_value = access_code_1
+        self.mock_visitor_service.get_or_create_visitor.return_value = Visitor(id=access_code_2.fk_visitor)
+        self.mock_access_repo.create_code.return_value = access_code_2
+
+        # Call to be tested
+        response = await self.access_code_service.get_access_code(access_code_2.fk_visitor)
+        assert response == parse_to_dto(access_code_2)
 
     async def test_get_last_access_code_should_be_a_value(self):
         today_queue_mock = await self.mock_queue_service.get_todays_queue()
         last_access_code = await self.mock_access_repo.get_last_access_code(today_queue_mock.id)
         assert last_access_code
 
+    async def test_get_estimated_time_two_waiting_customers(self):
+        self.mock_queue_service.get_todays_queue.return_value = get_queue_dto()
+        self.mock_access_repo.get_visitors_count.return_value = ['Q006', 'Q007']
+        self.mock_access_repo.get_access_code_attended.return_value = [(20, 5), (15, 10)]
+
+        result = await self.access_code_service.get_estimated_time(parse_to_dto(get_access_code(Status.Waiting)))
+        assert result == parse_time_response(30)
+
+    async def test_get_estimated_time_non_waiting(self):
+        self.mock_queue_service.get_todays_queue.return_value = get_queue_dto()
+        self.mock_access_repo.get_visitors_count.return_value = []
+        self.mock_access_repo.get_access_code_attended.return_value = [(20, 5), (15, 10)]
+
+        result = await self.access_code_service.get_estimated_time(parse_to_dto(get_access_code(Status.Waiting)))
+        assert result == parse_time_response(10)
+
+    async def test_get_estimated_time_non_waiting(self):
+        self.mock_queue_service.get_todays_queue.return_value = get_queue_dto()
+        self.mock_access_repo.get_visitors_count.return_value = ['Q006', 'Q007']
+        self.mock_access_repo.get_access_code_attended.return_value = []
+
+        result = await self.access_code_service.get_estimated_time(parse_to_dto(get_access_code(Status.Waiting)))
+        assert result == parse_time_response(36000)

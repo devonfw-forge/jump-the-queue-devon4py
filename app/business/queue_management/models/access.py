@@ -11,9 +11,9 @@ class AccessCodeDto(BaseModel):
     modificationCounter: int
     code: str
     uuid: UUID
-    createdDate: datetime
-    starTime: Optional[datetime]
-    endTime: Optional[datetime]
+    createdDate: int
+    starTime: Optional[int]
+    endTime: Optional[int]
     status: Status
     queueId: int
 
@@ -32,8 +32,8 @@ class UuidRequest(BaseModel):
 
 
 class EstimatedTimeResponse(BaseModel):
-    miliseconds: datetime
-    defaultTimeByUserInMs: datetime
+    miliseconds: int
+    defaultTimeByUserInMs: int
 
 
 class AccessCodeStatus(Enum):
