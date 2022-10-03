@@ -29,7 +29,8 @@ class AccessCodeSQLRepository(BaseSQLRepository[AccessCode]):
 
     async def get_by_queue_first_waiting(self, queue_id: UUID) -> Optional[AccessCode]:
         access_code = await self.session.exec(select(AccessCode).where(AccessCode.fk_queue == queue_id, AccessCode.
-                                                                       status == Status.Waiting))
+                                                                       status == Status.Waiting).
+                                              order_by(AccessCode.created_time))
         return access_code.first()
 
     async def save(self, *, model: AccessCode, refresh: bool = True):

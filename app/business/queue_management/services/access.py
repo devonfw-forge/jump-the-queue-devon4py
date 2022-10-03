@@ -2,9 +2,10 @@ import datetime
 import logging
 from fastapi import Depends
 from typing import Optional, List
+from sse_starlette import ServerSentEvent
 from app.business.queue_management.services.queue import QueueService
 from app.business.queue_management.services.visitor import VisitorService
-from app.common.exceptions.runtime import DevonCustomException
+from app.common.services.sse import EventPublisher
 from app.domain.queue_management.models import AccessCode
 from app.domain.queue_management.models.access_code import Status
 from app.domain.queue_management.repositories.access_code import AccessCodeSQLRepository
@@ -40,6 +41,7 @@ def parse_time_response(estimated_attention_time: int) -> EstimatedTimeResponse:
 
 
 class AccessCodeService:
+    access_event_publisher = EventPublisher()
 
     def __init__(self, repository: AccessCodeSQLRepository = Depends(AccessCodeSQLRepository),
                  queue_service: QueueService = Depends(QueueService),
@@ -47,6 +49,10 @@ class AccessCodeService:
         self.access_code_repo = repository
         self.queue_service = queue_service
         self._visitor_service = visitor_service
+
+    def add_sse(self) -> ServerSentEvent:
+        _, sse = self.access_event_publisher.subscribe()
+        return sse
 
     async def get_current_ticket_number(self) -> Optional[AccessCodeDto]:
         """
@@ -78,6 +84,9 @@ class AccessCodeService:
             next_access_code.status = Status.Attending
             next_access_code.start_time = get_current_time()
             await self.access_code_repo.save(model=next_access_code)
+            next_customer = await self.access_code_repo.get_by_queue_first_waiting(today_queue.id)
+            self.access_event_publisher.publish(data=parse_to_dto(next_customer), topic="Next to Attend",
+                                                targets=next_customer.fk_visitor)
         next_ticket: NextCodeCto = NextCodeCto(
             accessCode=parse_to_dto(next_access_code),
             remainingCodes=RemainingCodes(
@@ -117,7 +126,11 @@ class AccessCodeService:
             logger.info(new_access_code)
             access_code = await self.access_code_repo.create_code(queue_id=today_queue.id, visitor_id=visitor.id,
                                                                   new_access_code=new_access_code)
-
+            # SSE notify
+            visitors_before_current_client = await self.access_code_repo.get_visitors_count(today_queue.id,
+                                                                                            access_code.fk_visitor)
+            if not visitors_before_current_client:
+                self.access_event_publisher.publish(data=parse_to_dto(access_code), topic="Next to Attend", targets=access_code.fk_visitor)
         return parse_to_dto(access_code)
 
     async def get_estimated_time(self, access_code_request: AccessCodeDto) -> EstimatedTimeResponse:

@@ -42,3 +42,8 @@ async def get_remaining_codes_count(access_service: AccessCodeService = Depends(
     logger.info("Retrieve the remaining ticket's amount")
     qty = await access_service.get_remaining_codes()
     return RemainingCodes(remainingCodes=qty)
+
+
+@router.get("/subscribe", description="Real time notifications")
+async def subscribe(access_service: AccessCodeService = Depends(AccessCodeService)):
+    return access_service.add_sse()
