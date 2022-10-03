@@ -36,14 +36,14 @@ class AccessCodeSQLRepository(BaseSQLRepository[AccessCode]):
         model.modification_counter += 1
         return await super().save(model=model, refresh=refresh)
 
-    async def get_access_code(self, queue_id, uuid):
-        uuid = str(uuid)
-        access_code = await self.session.exec(
-            select(AccessCode).where(AccessCode.fk_queue == queue_id).where(AccessCode.fk_visitor == uuid))
+    async def get_access_code(self, queue_id: int, uuid: UUID) -> Optional[AccessCode]:
+        access_code = await self.session.exec(select(AccessCode).where(AccessCode.fk_queue == queue_id,
+                                                                       AccessCode.fk_visitor == uuid))
         return access_code.one_or_none()
 
     async def get_last_access_code(self, queue_id) -> AccessCode:
-        last_code = await self.session.exec(select(AccessCode).where(AccessCode.fk_queue == queue_id).order_by(desc(AccessCode.created_time)))
+        last_code = await self.session.exec(
+            select(AccessCode).where(AccessCode.fk_queue == queue_id).order_by(desc(AccessCode.created_time)))
         return last_code.first()
 
     async def create_code(self, *, queue_id: int, visitor_id: UUID, new_access_code: str) -> AccessCode:
@@ -51,6 +51,23 @@ class AccessCodeSQLRepository(BaseSQLRepository[AccessCode]):
         await self.add(model=access)
         return access
 
+    async def get_visitors_count(self, queue_id: int, visitor_id: UUID):
+        visitor_access_code = await self.get_access_code(queue_id, visitor_id)
+        visitors = await self.session.exec(select(AccessCode.code).where(
+            AccessCode.fk_queue == queue_id,
+            AccessCode.status == Status.Waiting,
+            AccessCode.created_time < visitor_access_code.created_time))
+        return visitors.all()
 
+    async def get_access_code_attended(self, queue_id):
+        attended = await self.session.exec(select(AccessCode.end_time, AccessCode.start_time).where(
+            AccessCode.fk_queue == queue_id, AccessCode.status == Status.Attended).order_by(AccessCode.created_time))
+        return attended.all()
 
-
+    # async def get_total_attention_time(self, queue_id):
+    #     end_time_list = await self.session.exec(select(AccessCode.end_time).where(
+    #         AccessCode.fk_queue == queue_id, AccessCode.status == Status.Attended).order_by(AccessCode.created_time))
+    #     start_time_list = await self.session.exec(select(AccessCode.start_time).where(
+    #         AccessCode.fk_queue == queue_id, AccessCode.status == Status.Attended).order_by(AccessCode.created_time))
+    #     attention_time = map(lambda x, y: x.timestamp() - y.timestamp(), end_time_list.all(), start_time_list.all())
+    #     return list(attention_time)
