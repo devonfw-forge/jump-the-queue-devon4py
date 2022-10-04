@@ -49,3 +49,7 @@ async def leave_queue(request: UuidRequest, access_service: AccessCodeService = 
     logger.info("Retrieve the remaining ticket's amount")
     access_code = await access_service.leave_queue(request.uuid)
     return access_code
+
+@router.get("/subscribe", description="Real time notifications")
+async def subscribe(access_service: AccessCodeService = Depends(AccessCodeService)):
+    return access_service.add_sse()

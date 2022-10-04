@@ -2,6 +2,8 @@ import logging
 
 from fastapi import Depends
 
+from app.business.queue_management.models.queue import QueueDto, SseTopic
+from app.common.services.sse import EventPublisher
 from app.business.queue_management.models.queue import QueueDto, TimeQueueDto
 from app.domain.queue_management.models import Queue
 from app.domain.queue_management.repositories.access_code import AccessCodeSQLRepository
@@ -31,6 +33,7 @@ log = logging.getLogger(__name__)
 
 
 class QueueService:
+    queue_event_publisher = EventPublisher()
 
     def __init__(self, repository: QueueSQLRepository = Depends(QueueSQLRepository),
                  access_code_repo: AccessCodeSQLRepository = Depends(AccessCodeSQLRepository)):
@@ -55,6 +58,7 @@ class QueueService:
         if current_queue.started is False:
             current_queue.started = True
             await self.queue_repo.save(model=current_queue)
+            self.queue_event_publisher.publish(data=parse_to_dto(current_queue).json(), topic=SseTopic.QUEUE_STARTED)
         else:
             log.info("Queue already started")
         return parse_to_dto(current_queue)
