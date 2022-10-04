@@ -4,6 +4,8 @@ from uuid import UUID
 from pydantic import BaseModel
 from typing import Optional
 from app.domain.queue_management.models.access_code import Status
+from app.business.queue_management.models.queue import QueueDto
+
 
 
 class AccessCodeDto(BaseModel):
@@ -16,6 +18,11 @@ class AccessCodeDto(BaseModel):
     endTime: Optional[int]
     status: Status
     queueId: int
+
+
+class AccessCodeResponse(BaseModel):
+    accessCode: AccessCodeDto
+    queue: QueueDto
 
 
 class RemainingCodes(BaseModel):

@@ -12,11 +12,18 @@ from app.domain.queue_management.models import AccessCode
 from app.domain.queue_management.models.access_code import Status
 from app.domain.queue_management.repositories.access_code import AccessCodeSQLRepository
 from app.business.queue_management.models.access import AccessCodeDto, NextCodeCto, RemainingCodes, \
-    EstimatedTimeResponse
-from app.business.queue_management.models.queue import SseTopic
+    EstimatedTimeResponse, AccessCodeResponse
+from app.business.queue_management.models.queue import SseTopic, QueueDto
 from app.common.utils import get_current_time
 
 logger = logging.getLogger(__name__)
+
+
+def response_json(access_code: AccessCodeDto, queue: QueueDto) -> AccessCodeResponse:
+    return AccessCodeResponse(
+        accessCode=access_code,
+        queue=queue
+    )
 
 
 def parse_to_dto(access_code_entity: AccessCode) -> Optional[AccessCodeDto]:
@@ -88,6 +95,9 @@ class AccessCodeService:
             next_access_code.start_time = get_current_time()
             await self.access_code_repo.save(model=next_access_code)
             self.access_event_publisher.publish(data=parse_to_dto(next_access_code).json(), topic=SseTopic.CURRENT_CODE_CHANGED)
+        else:
+            self.access_event_publisher.publish(data=parse_to_dto(next_access_code).json(),
+                                                topic=SseTopic.CURRENT_CODE_CHANGED_NULL)
         next_ticket: NextCodeCto = NextCodeCto(
             accessCode=parse_to_dto(next_access_code),
             remainingCodes=RemainingCodes(
@@ -129,7 +139,7 @@ class AccessCodeService:
                                                                   new_access_code=new_access_code)
             # SSE notify
             self.access_event_publisher.publish(data=parse_to_dto(access_code).json(), topic=SseTopic.NEW_CODE_ADDED)
-        return parse_to_dto(access_code)
+        return response_json(parse_to_dto(access_code), today_queue)
 
     async def get_estimated_time(self, access_code_request: AccessCodeDto) -> EstimatedTimeResponse:
         """
@@ -146,7 +156,7 @@ class AccessCodeService:
         # attention_time: The time between the moment the customer starts to be served and the moment
         # the next customer is called
         attended_customers_times = await self.access_code_repo.get_access_code_attended(today_queue.id)
-        attention_time = list(map(lambda x: x[0] - x[1] if x[0] - x[1] >= today_queue.minAttentionTime else today_queue.minAttentionTime, attended_customers_times))
+        attention_time = list(map(lambda x: (x[0] - x[1]).seconds if (x[0] - x[1]).seconds >= today_queue.minAttentionTime else today_queue.minAttentionTime, attended_customers_times))
         # average_attention_time:
         # (The sum of attention_time from the first attended customer until the last attended customer before me) /
         # the number of the no attended customers in queue before me.

@@ -1,6 +1,5 @@
-from typing import List
+from typing import List, Optional
 from uuid import UUID
-
 from pydantic import BaseModel
 from sqlmodel import Field
 
@@ -32,3 +31,7 @@ class OwnerDto(BaseModel):
     username: str
     password: str
     userType: bool
+
+
+class OwnerResponse(BaseModel):
+    content: List[Optional[OwnerDto]]

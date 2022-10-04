@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, Depends
 from typing import Optional
 from app.business.queue_management.models.access import EstimatedTimeResponse, NextCodeCto, \
-    RemainingCodes, UuidRequest, AccessCodeDto
+    RemainingCodes, UuidRequest, AccessCodeDto, AccessCodeResponse
 from app.business.queue_management.services.access import AccessCodeService
 
 router = APIRouter(prefix="/accesscodemanagement/v1/accesscode")
@@ -24,7 +24,7 @@ async def call_next_code(access_service: AccessCodeService = Depends(AccessCodeS
     return await access_service.get_next_ticket_number()
 
 
-@router.post("/uuid", description="Get AccessCode by uuid creating visitors waiting", response_model=AccessCodeDto)
+@router.post("/uuid", description="Get AccessCode by uuid creating visitors waiting", response_model=AccessCodeResponse)
 async def get_access_code(request: UuidRequest, access_service: AccessCodeService = Depends(AccessCodeService)):
     logger.info("Retrieve current ticket")
     return await access_service.get_access_code(request.uuid)
