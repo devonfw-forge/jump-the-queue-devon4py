@@ -1,7 +1,7 @@
 import datetime
 import logging
 from fastapi import Depends
-from typing import Optional, List
+from typing import Optional
 from sse_starlette import ServerSentEvent
 from app.business.queue_management.services.queue import QueueService
 from app.business.queue_management.services.visitor import VisitorService
@@ -9,8 +9,9 @@ from app.common.services.sse import EventPublisher
 from app.domain.queue_management.models import AccessCode
 from app.domain.queue_management.models.access_code import Status
 from app.domain.queue_management.repositories.access_code import AccessCodeSQLRepository
-from app.business.queue_management.models.access import AccessCodeDto, NextCodeCto, RemainingCodes, AccessCodeStatus, \
+from app.business.queue_management.models.access import AccessCodeDto, NextCodeCto, RemainingCodes, \
     EstimatedTimeResponse
+from app.business.queue_management.models.queue import SseTopic
 from app.common.utils import get_current_time
 
 logger = logging.getLogger(__name__)
@@ -84,9 +85,7 @@ class AccessCodeService:
             next_access_code.status = Status.Attending
             next_access_code.start_time = get_current_time()
             await self.access_code_repo.save(model=next_access_code)
-            next_customer = await self.access_code_repo.get_by_queue_first_waiting(today_queue.id)
-            self.access_event_publisher.publish(data=parse_to_dto(next_customer), topic="Next to Attend",
-                                                targets=next_customer.fk_visitor)
+            self.access_event_publisher.publish(data=parse_to_dto(next_access_code).json(), topic=SseTopic.CURRENT_CODE_CHANGED)
         next_ticket: NextCodeCto = NextCodeCto(
             accessCode=parse_to_dto(next_access_code),
             remainingCodes=RemainingCodes(
@@ -127,10 +126,7 @@ class AccessCodeService:
             access_code = await self.access_code_repo.create_code(queue_id=today_queue.id, visitor_id=visitor.id,
                                                                   new_access_code=new_access_code)
             # SSE notify
-            visitors_before_current_client = await self.access_code_repo.get_visitors_count(today_queue.id,
-                                                                                            access_code.fk_visitor)
-            if not visitors_before_current_client:
-                self.access_event_publisher.publish(data=parse_to_dto(access_code), topic="Next to Attend", targets=access_code.fk_visitor)
+            self.access_event_publisher.publish(data=parse_to_dto(access_code).json(), topic=SseTopic.NEW_CODE_ADDED)
         return parse_to_dto(access_code)
 
     async def get_estimated_time(self, access_code_request: AccessCodeDto) -> EstimatedTimeResponse:
