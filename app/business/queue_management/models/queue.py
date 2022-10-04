@@ -16,7 +16,7 @@ class Direction(Enum):
     DESC = 'DESC'
 
 
-class SseTopic(Enum):
+class SseTopic(str, Enum):
     QUEUE_STARTED = 'QUEUE_STARTED'
     NEW_CODE_ADDED = 'NEW_CODE_ADDED'
     CURRENT_CODE_CHANGED = 'CURRENT_CODE_CHANGED'
