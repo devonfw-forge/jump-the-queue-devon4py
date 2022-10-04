@@ -1,5 +1,7 @@
 import datetime
 import logging
+from uuid import UUID
+
 from fastapi import Depends
 from typing import Optional
 from sse_starlette import ServerSentEvent
@@ -140,18 +142,18 @@ class AccessCodeService:
         visitors_before_current_client = await self.access_code_repo.get_visitors_count(today_queue.id,
                                                                                         access_code_request.uuid)
         # total of visitors waiting in the queue + the one that is being attended
-        nb_non_attented_customers = len(visitors_before_current_client)+1
+        nb_non_attented_customers = len(visitors_before_current_client) + 1
         # attention_time: The time between the moment the customer starts to be served and the moment
         # the next customer is called
         attended_customers_times = await self.access_code_repo.get_access_code_attended(today_queue.id)
-        attention_time = list(map(lambda x: x[0]-x[1], attended_customers_times))
+        attention_time = list(map(lambda x: x[0] - x[1] if x[0] - x[1] >= today_queue.minAttentionTime else today_queue.minAttentionTime, attended_customers_times))
         # average_attention_time:
         # (The sum of attention_time from the first attended customer until the last attended customer before me) /
         # the number of the no attended customers in queue before me.
         try:
-            average_attention_time = sum(attention_time)/len(attention_time)
+            average_attention_time = sum(attention_time) / len(attention_time)
         except ZeroDivisionError:
-            average_attention_time = 12000
+            average_attention_time = 120000
         # attention_time: average_attention_time ∗ (nº of no attended customers in queue before me)
         estimated_attention_time = average_attention_time * nb_non_attented_customers
 
@@ -166,3 +168,11 @@ class AccessCodeService:
         # Get amount of remaining codes (pending/waiting to be called)
         codes = await self.access_code_repo.get_remaining_codes()
         return codes
+
+    async def leave_queue(self, visitor_id: UUID) -> AccessCodeDto:
+        today_queue = await self.queue_service.get_todays_queue()
+        access_code = await self.access_code_repo.get_access_code(today_queue.id, visitor_id)
+        access_code.status = Status.Skipped
+        await self.access_code_repo.save(access_code)
+
+        return parse_to_dto(access_code)

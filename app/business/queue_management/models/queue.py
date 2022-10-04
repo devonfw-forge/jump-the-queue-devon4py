@@ -31,6 +31,15 @@ class QueueDto(BaseModel):
     createdDate: date
 
 
+class TimeQueueDto(BaseModel):
+    id: int
+    modificationCounter: int
+    minAttentionTime: int
+    totalAttentionTime: int
+    started: bool
+    createdDate: date
+
+
 
 
 

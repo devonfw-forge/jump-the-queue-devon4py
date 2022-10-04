@@ -65,6 +65,12 @@ class AccessCodeSQLRepository(BaseSQLRepository[AccessCode]):
             AccessCode.fk_queue == queue_id, AccessCode.status == Status.Attended).order_by(AccessCode.created_time))
         return attended.all()
 
+    async def get_waiting_customers_count(self, queue_id: int):
+        visitors = await self.session.exec(select(AccessCode.code).where(
+            AccessCode.fk_queue == queue_id,
+            AccessCode.status == Status.Waiting))
+        return visitors.all()
+
     # async def get_total_attention_time(self, queue_id):
     #     end_time_list = await self.session.exec(select(AccessCode.end_time).where(
     #         AccessCode.fk_queue == queue_id, AccessCode.status == Status.Attended).order_by(AccessCode.created_time))

@@ -24,13 +24,13 @@ async def call_next_code(access_service: AccessCodeService = Depends(AccessCodeS
     return await access_service.get_next_ticket_number()
 
 
-@router.post("/uuid/", description="Get AccessCode by uuid creating visitors waiting", response_model=AccessCodeDto)
+@router.post("/uuid", description="Get AccessCode by uuid creating visitors waiting", response_model=AccessCodeDto)
 async def get_access_code(request: UuidRequest, access_service: AccessCodeService = Depends(AccessCodeService)):
     logger.info("Retrieve current ticket")
     return await access_service.get_access_code(request.uuid)
 
 
-@router.post("/estimated/", description="Get estimated time by code", response_model=EstimatedTimeResponse)
+@router.post("/estimated", description="Get estimated time by code", response_model=EstimatedTimeResponse)
 async def get_estimated_time_by_code(request: AccessCodeDto, access_service: AccessCodeService = Depends(AccessCodeService)):
     logger.info("Retrieve estimated waiting time")
     attention_time_media = await access_service.get_estimated_time(request)
@@ -43,6 +43,12 @@ async def get_remaining_codes_count(access_service: AccessCodeService = Depends(
     qty = await access_service.get_remaining_codes()
     return RemainingCodes(remainingCodes=qty)
 
+
+@router.post("/leave", description="Leave the queue", response_model=AccessCodeDto)
+async def leave_queue(request: UuidRequest, access_service: AccessCodeService = Depends(AccessCodeService)):
+    logger.info("Retrieve the remaining ticket's amount")
+    access_code = await access_service.leave_queue(request.uuid)
+    return access_code
 
 @router.get("/subscribe", description="Real time notifications")
 async def subscribe(access_service: AccessCodeService = Depends(AccessCodeService)):

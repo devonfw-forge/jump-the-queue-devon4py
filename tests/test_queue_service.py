@@ -1,7 +1,8 @@
 from unittest import IsolatedAsyncioTestCase
 from unittest.mock import MagicMock
-from app.business.queue_management.services.queue import QueueService, parse_to_dto
+from app.business.queue_management.services.queue import QueueService, parse_to_dto, parse_to_time_dto
 from app.domain.queue_management.models import Queue
+from app.domain.queue_management.repositories.access_code import AccessCodeSQLRepository
 from app.domain.queue_management.repositories.queue import QueueSQLRepository
 
 
@@ -9,10 +10,12 @@ class QueueServiceTests(IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         # Mocks
         self.mock_queue_repo = MagicMock(QueueSQLRepository)
+        self.mock_access_repo = MagicMock(AccessCodeSQLRepository)
 
         # QueueService
         self.queue_service = QueueService(
-            self.mock_queue_repo
+            self.mock_queue_repo,
+            self.mock_access_repo
         )
 
     async def test_get_todays_queue_is_none_should_create_it(self):
@@ -60,3 +63,41 @@ class QueueServiceTests(IsolatedAsyncioTestCase):
 
         self.mock_queue_repo.save.assert_not_called()
         assert updated_queue.started == True
+
+    async def test_total_waiting_time_when_attended_customers(self):
+        test_queue = Queue(id=1, started=True)
+        self.mock_queue_repo.get.return_value = test_queue
+        self.mock_access_repo.get_access_code_attended.return_value = [(20, 5), (15, 10)]
+        self.mock_access_repo.get_waiting_customers_count.return_value = []
+
+        response = await self.queue_service.waiting_queue_time(test_queue.id)
+        assert response.totalAttentionTime == 0
+
+    async def test_total_waiting_time_when_no_attended_customers(self):
+        test_queue = Queue(id=1, started=True)
+        self.mock_queue_repo.get.return_value = test_queue
+        self.mock_access_repo.get_access_code_attended.return_value = []
+        self.mock_access_repo.get_waiting_customers_count.return_value = ['Q006', 'Q007']
+
+        response = await self.queue_service.waiting_queue_time(test_queue.id)
+        assert response == parse_to_time_dto(test_queue, 24000)
+
+    async def test_close_queue_when_started(self):
+        test_queue = Queue(id=1, started=True)
+        self.mock_queue_repo.get.return_value = test_queue
+
+        # Call to be tested
+        updated_queue = await self.queue_service.close_queue(test_queue.id)
+
+        self.mock_queue_repo.save.assert_called()
+        assert updated_queue.started == False
+
+    async def test_close_queue_when_closed(self):
+        test_queue = Queue(id=1, started=False)
+        self.mock_queue_repo.get.return_value = test_queue
+
+        # Call to be tested
+        updated_queue = await self.queue_service.close_queue(test_queue.id)
+
+        self.mock_queue_repo.save.assert_not_called()
+        assert updated_queue.started == False
