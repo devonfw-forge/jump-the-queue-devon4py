@@ -2,7 +2,6 @@ from fastapi import Depends
 from sqlmodel import select
 
 from app.common.base.base_repository import BaseSQLRepository
-from app.common.exceptions.http import DevonHttpException
 from app.common.infra.sql_adaptors import AsyncSession, get_async_session
 from app.common.utils import get_current_date
 from app.domain.queue_management.models import Queue
